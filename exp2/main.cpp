@@ -1,107 +1,208 @@
-#include <iostream>
-#include <vector>
-#include <string>
+ï»¿#include <iostream>
 #include <fstream>
+#include <string>
 #include "HuffCode.h"
 
 using namespace std;
 
-// ¼ì²éÎÄ¼þÊÇ·ñ´æÔÚ
-bool fileExists(const string& filename) {
-    ifstream file(filename);
-    return file.good();
+// æµ‹è¯•ä»Žæ–‡ä»¶æž„å»º
+void testFromFile(const string& filename) {
+    cout << "ä»Žæ–‡ä»¶æž„å»ºHuffmanç¼–ç " << endl;
+
+    HuffCode huffman;
+
+    // ä»Žæ–‡ä»¶æž„å»ºé¢‘çŽ‡è¡¨
+    huffman.buildFrequencyTable(filename);
+
+    // æ‰“å°é¢‘çŽ‡è¡¨
+    huffman.printFrequencyTable();
+
+    // æž„å»ºHuffmanæ ‘
+    huffman.buildHuffmanTree();
+
+    // æ‰“å°ç¼–ç è¡¨
+    huffman.printCodeTable();
+
+    // æ‰“å°Huffmanæ ‘ç»“æž„
+    cout << endl;
+    huffman.printHuffmanTree();
+
+    // ç¼–ç ç¤ºä¾‹å•è¯
+    cout << "\nç¤ºä¾‹ " << endl;
+    string testWords[] = { "hello", "world", "test", "example" };
+    for (const auto& word : testWords) {
+        Bitmap encoded = huffman.encodeWord(word);
+        cout << word << " -> " << encoded.toString() << endl;
+
+        // è§£ç éªŒè¯
+        string decoded = huffman.decodeBitmap(encoded);
+        cout << "è§£ç : " << decoded << endl;
+
+        // éªŒè¯ç»“æžœ
+        string wordLower;
+        for (char c : word) {
+            wordLower += tolower(c);
+        }
+
+        if (decoded == wordLower) {
+            cout << "ç¼–ç è§£ç æˆåŠŸ" << endl;
+        }
+        else {
+            cout << "ç¼–ç è§£ç å¤±è´¥" << endl;
+        }
+        cout << endl;
+    }
 }
 
-// ³¢ÊÔ´Ó¶à¸öÎ»ÖÃ¶ÁÈ¡ÎÄ¼þ
-string tryReadFile() {
-    // ³¢ÊÔ²»Í¬µÄÎÄ¼þÂ·¾¶
-    vector<string> possiblePaths = {
-        "I_have_a_dream.txt",  // µ±Ç°Ä¿Â¼
-        "../I_have_a_dream.txt",  // ÉÏ¼¶Ä¿Â¼
-        "../../I_have_a_dream.txt",  // ÉÏÉÏ¼¶Ä¿Â¼
-        "./ÑÝ½²Ô­ÎÄ.txt",  // ÖÐÎÄÎÄ¼þÃû
-        "ÑÝ½²Ô­ÎÄ.txt"
-    };
+// æµ‹è¯•ä»Žå­—ç¬¦ä¸²æž„å»º
+void testFromString(const string& text) {
+    cout << "\nä»Žå­—ç¬¦ä¸²æž„å»ºHuffmanç¼–ç " << endl;
+    cout << "è¾“å…¥æ–‡æœ¬: \"" << text << "\"" << endl << endl;
 
-    for (const auto& path : possiblePaths) {
-        if (fileExists(path)) {
-            ifstream file(path);
-            string content((istreambuf_iterator<char>(file)),
-                istreambuf_iterator<char>());
-            cout << "³É¹¦¶ÁÈ¡ÎÄ¼þ: " << path << endl;
-            return content;
+    HuffCode huffman;
+
+    // ä»Žå­—ç¬¦ä¸²æž„å»ºé¢‘çŽ‡è¡¨
+    huffman.buildFrequencyTableFromString(text);
+
+    // æ‰“å°é¢‘çŽ‡è¡¨
+    huffman.printFrequencyTable();
+
+    // æž„å»ºHuffmanæ ‘
+    huffman.buildHuffmanTree();
+
+    // æ‰“å°ç¼–ç è¡¨
+    huffman.printCodeTable();
+
+    // æ‰“å°Huffmanæ ‘ç»“æž„
+    cout << endl;
+    huffman.printHuffmanTree();
+
+    // ç¼–ç æ•´ä¸ªæ–‡æœ¬
+    cout << "\nå®Œæ•´ç¼–ç è§£ç æµ‹è¯•" << endl;
+
+    // å‡†å¤‡å°å†™æ–‡æœ¬ï¼ˆåªä¿ç•™å­—æ¯ï¼‰
+    string textLower;
+    for (char c : text) {
+        if (isalpha(c)) {
+            textLower += tolower(c);
         }
     }
 
+    cout << "å¾…ç¼–ç æ–‡æœ¬: " << textLower << endl;
 
-    int main()
-        ; {
+    // ç¼–ç 
+    Bitmap encoded = huffman.encodeWord(textLower);
+    cout << "ç¼–ç ç»“æžœ (" << encoded.getSize() << "ä½): " << encoded.toString() << endl;
 
+    // è§£ç 
+    string decoded = huffman.decodeBitmap(encoded);
+    cout << "è§£ç ç»“æžœ: " << decoded << endl;
 
-    // ´´½¨Huffman±àÂëÆ÷
-    HuffCode huffCode;
-
-    // ¶ÁÈ¡ÎÄ±¾ÄÚÈÝ
-    cout << "\nÕýÔÚ¶ÁÈ¡ÎÄ±¾..." << endl;
-    string textContent = tryReadFile();
-
-    // ´Ó×Ö·û´®¹¹½¨ÆµÂÊ±í
-    huffCode.buildFrequencyTableFromString(textContent);
-
-    cout << "\n1. ×Ö·ûÆµÂÊÍ³¼Æ£º" << endl;
-    huffCode.printFrequencyTable();
-
-    // ¹¹½¨HuffmanÊ÷
-    cout << "\n2. ¹¹½¨HuffmanÊ÷..." << endl;
-    huffCode.buildHuffmanTree();
-
-    // ´òÓ¡±àÂë±í
-    huffCode.printCodeTable();
-
-    // ´òÓ¡HuffmanÊ÷½á¹¹
-    cout << "\n3. HuffmanÊ÷½á¹¹£º" << endl;
-    huffCode.printHuffmanTree();
-
-    // ±àÂë²âÊÔµ¥´Ê
-    cout << "\n4. µ¥´Ê±àÂë²âÊÔ£º" << endl;
-    cout << "=========================================" << endl;
-
-    vector<string> testWords = { "dream", "freedom", "justice", "equality", "hope", "brotherhood" };
-
-    for (const string& word : testWords) {
-        Bitmap code = huffCode.encodeWord(word);
-        cout << word << " µÄ±àÂë: " << code << endl;
-        cout << "  ³¤¶È: " << code.getSize() << " Î»" << endl;
-        cout << "  " << string(40, '-') << endl;
+    // éªŒè¯
+    if (decoded == textLower) {
+        cout << "å®Œæ•´ç¼–ç è§£ç æˆåŠŸ" << endl;
+    }
+    else {
+        cout << "å®Œæ•´ç¼–ç è§£ç å¤±è´¥" << endl;
+        cout << "åŽŸå§‹: " << textLower << endl;
+        cout << "è§£ç : " << decoded << endl;
     }
 
-    // ÑÝÊ¾½âÂë¹¦ÄÜ
-    cout << "\n5. ½âÂëÑÝÊ¾£º" << endl;
-    string testWord = "dream";
-    Bitmap testCode = huffCode.encodeWord(testWord);
-    cout << "Ô­Ê¼µ¥´Ê: " << testWord << endl;
-    cout << "±àÂë: " << testCode << endl;
+    // è®¡ç®—åŽ‹ç¼©çŽ‡
+    int originalBits = textLower.length() * 8; // ASCIIç¼–ç 
+    int compressedBits = encoded.getSize();
+    double compressionRatio = (1.0 - (double)compressedBits / originalBits) * 100;
 
-    string decoded = huffCode.decodeBitmap(testCode);
-    cout << "½âÂë½á¹û: " << decoded << endl;
+    cout << "\nåŽ‹ç¼©ç»Ÿè®¡" << endl;
+    cout << "åŽŸå§‹å¤§å°: " << originalBits << " ä½" << endl;
+    cout << "åŽ‹ç¼©å¤§å°: " << compressedBits << " ä½" << endl;
+    cout << "åŽ‹ç¼©çŽ‡: " << compressionRatio << "%" << endl;
+}
 
-    // ÏÔÊ¾Ò»Ð©Í³¼ÆÐÅÏ¢
-    cout << "\n6. Í³¼ÆÐÅÏ¢£º" << endl;
-    cout << "=========================================" << endl;
-    cout << "ÎÄ±¾×Ü×Ö·ûÊý: " << textContent.length() << endl;
+// äº¤äº’å¼æµ‹è¯•
+void interactiveTest() {
+    cout << "\näº¤äº’å¼æµ‹è¯•" << endl;
 
-    // ¼ÆËãÑ¹ËõÐ§ÂÊ
-    const auto& codeTable = huffCode.getCodeTable();
-    int totalBits = 0;
-    for (const auto& pair : codeTable) {
-        totalBits += pair.second.getSize();
+    HuffCode huffman;
+    string input;
+
+    cout << "è¯·è¾“å…¥è¦ç¼–ç çš„æ–‡æœ¬ï¼ˆè¾“å…¥'exit'é€€å‡ºï¼‰: ";
+    getline(cin, input);
+
+    while (input != "exit") {
+        // ä»Žè¾“å…¥æž„å»ºé¢‘çŽ‡è¡¨
+        huffman.buildFrequencyTableFromString(input);
+
+        // æž„å»ºHuffmanæ ‘
+        huffman.buildHuffmanTree();
+
+        // æ˜¾ç¤ºç¼–ç è¡¨
+        huffman.printCodeTable();
+
+        // ç¼–ç 
+        Bitmap encoded = huffman.encodeWord(input);
+        cout << "\nç¼–ç ç»“æžœ (" << encoded.getSize() << "ä½): " << encoded.toString() << endl;
+
+        // è§£ç 
+        string decoded = huffman.decodeBitmap(encoded);
+        cout << "è§£ç ç»“æžœ: " << decoded << endl;
+
+        // å‡†å¤‡å°å†™æ–‡æœ¬ï¼ˆåªä¿ç•™å­—æ¯ï¼‰
+        string inputLower;
+        for (char c : input) {
+            if (isalpha(c)) {
+                inputLower += tolower(c);
+            }
+        }
+
+        // éªŒè¯
+        if (decoded == inputLower) {
+            cout << "ç¼–ç è§£ç æˆåŠŸ" << endl;
+        }
+        else {
+            cout << "ç¼–ç è§£ç å¤±è´¥" << endl;
+        }
+
+        // è®¡ç®—åŽ‹ç¼©çŽ‡
+        if (!inputLower.empty()) {
+            int originalBits = inputLower.length() * 8;
+            int compressedBits = encoded.getSize();
+            double compressionRatio = (1.0 - (double)compressedBits / originalBits) * 100;
+            cout << "åŽ‹ç¼©çŽ‡: " << compressionRatio << "%" << endl;
+        }
+
+        cout << "\nè¯·è¾“å…¥è¦ç¼–ç çš„æ–‡æœ¬ï¼ˆè¾“å…¥'exit'é€€å‡ºï¼‰: ";
+        getline(cin, input);
+    }
+}
+
+int main() {
+    cout << "Huffmanç¼–ç æµ‹è¯•" << endl;
+
+    // åˆ›å»ºæµ‹è¯•æ–‡ä»¶
+    ofstream testFile("test.txt");
+    if (testFile.is_open()) {
+        testFile << "hello world this is a test of huffman coding\n";
+        testFile << "huffman coding is a popular algorithm for lossless data compression\n";
+        testFile << "the algorithm was developed by david a huffman while he was a phd student at mit\n";
+        testFile.close();
+        cout << "å·²åˆ›å»ºæµ‹è¯•æ–‡ä»¶ test.txt" << endl;
+    }
+    else {
+        cout << "æ— æ³•åˆ›å»ºæµ‹è¯•æ–‡ä»¶ï¼Œå°†ä½¿ç”¨å­—ç¬¦ä¸²æµ‹è¯•" << endl;
     }
 
-    double avgCodeLength = codeTable.empty() ? 0 :
-        static_cast<double>(totalBits) / codeTable.size();
-    cout << "Æ½¾ù±àÂë³¤¶È: " << avgCodeLength << " Î»/×Ö·û" << endl;
-    cout << "¹Ì¶¨³¤¶È±àÂëÐèÒª: 5 Î»/×Ö·û" << endl;
-    cout << "±àÂëÐ§ÂÊÌáÉý: " << (1 - avgCodeLength / 5) * 100 << "%" << endl;
+    // æµ‹è¯•1ï¼šä»Žæ–‡ä»¶æž„å»º
+    testFromFile("test.txt");
+
+    // æµ‹è¯•2ï¼šä»Žå­—ç¬¦ä¸²æž„å»º
+    string testText = "this is an example of a huffman tree";
+    testFromString(testText);
+
+    // æµ‹è¯•3ï¼šäº¤äº’å¼æµ‹è¯•
+    interactiveTest();
+
+    cout << "\næµ‹è¯•å®Œæˆ" << endl;
 
     return 0;
 }

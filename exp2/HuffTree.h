@@ -2,14 +2,14 @@
 #define HUFFTREE_H
 
 #include "BinTree.h"
-#include "Bitmap.h"  // 添加这行！
+#include "Bitmap.h"
 #include <string>
 #include <map>
 #include <vector>
 #include <algorithm>
 using namespace std;
 
-// Huffman树节点数据
+// Huffman字符结构
 struct HuffChar {
     char ch;       // 字符
     int weight;    // 权重（频率）
@@ -51,17 +51,43 @@ private:
         // 向左遍历
         code.append(false);  // 添加0
         generateCode(x->lc, code, codeTable);
-        code.clear(code.getSize() - 1);  // 移除最后一位
+        code.pop();  // 移除最后一位
 
         // 向右遍历
         code.append(true);   // 添加1
         generateCode(x->rc, code, codeTable);
-        code.clear(code.getSize() - 1);  // 移除最后一位
+        code.pop();  // 移除最后一位
+    }
+
+    // 附加子树作为左孩子
+    void attachAsLC(BinNode<HuffChar>* x, HuffTree*& t) {
+        if (!x || !t) return;
+        x->lc = t->root();
+        if (x->lc) x->lc->parent = x;
+        _size += t->size();
+        updateHeightAbove(x);
+        t->_root = nullptr;
+        delete t;
+        t = nullptr;
+    }
+
+    // 附加子树作为右孩子
+    void attachAsRC(BinNode<HuffChar>* x, HuffTree*& t) {
+        if (!x || !t) return;
+        x->rc = t->root();
+        if (x->rc) x->rc->parent = x;
+        _size += t->size();
+        updateHeightAbove(x);
+        t->_root = nullptr;
+        delete t;
+        t = nullptr;
     }
 
 public:
     // 根据频率构建Huffman树
     static HuffTree* buildHuffTree(const map<char, int>& freqMap) {
+        if (freqMap.empty()) return nullptr;
+
         // 创建叶节点森林
         vector<HuffTree*> forest;
         for (const auto& pair : freqMap) {
@@ -120,30 +146,6 @@ public:
     }
 
 private:
-    // 附加子树作为左孩子
-    void attachAsLC(BinNode<HuffChar>* x, HuffTree*& t) {
-        if (!x || !t) return;
-        x->lc = t->root();
-        if (x->lc) x->lc->parent = x;
-        _size += t->size();
-        updateHeightAbove(x);
-        t->_root = nullptr;
-        delete t;
-        t = nullptr;
-    }
-
-    // 附加子树作为右孩子
-    void attachAsRC(BinNode<HuffChar>* x, HuffTree*& t) {
-        if (!x || !t) return;
-        x->rc = t->root();
-        if (x->rc) x->rc->parent = x;
-        _size += t->size();
-        updateHeightAbove(x);
-        t->_root = nullptr;
-        delete t;
-        t = nullptr;
-    }
-
     // 打印树结构（辅助函数）
     void printTree(BinNode<HuffChar>* x, const string& prefix, bool isLeft) const {
         if (!x) return;

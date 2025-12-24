@@ -1,7 +1,7 @@
 #ifndef HUFFCODE_H
 #define HUFFCODE_H
 
-#include "HuffTree.h"  // 这会包含Bitmap.h
+#include "HuffTree.h"
 #include <fstream>
 #include <cctype>
 #include <algorithm>
@@ -9,7 +9,7 @@ using namespace std;
 
 class HuffCode {
 private:
-    map<char, int> freqMap;      // 字符频率表
+    map<char, int> freqMap;      // 频率表
     HuffTree* huffTree;          // Huffman树
     map<char, Bitmap> codeTable; // 编码表
 
@@ -24,7 +24,7 @@ public:
         }
     }
 
-    // 从文本文件构建频率表
+    // 从文件构建频率表
     void buildFrequencyTable(const string& filename) {
         freqMap.clear();
         ifstream file(filename);
@@ -100,28 +100,43 @@ public:
         return result;
     }
 
-    // 解码位图（仅用于演示）
+    // 解码位图
     string decodeBitmap(const Bitmap& bm) const {
+        if (!huffTree || !huffTree->root()) {
+            cerr << "Huffman树未构建或为空" << endl;
+            return "";
+        }
+
         string result;
         BinNode<HuffChar>* current = huffTree->root();
 
+        // 处理每个位
         for (size_t i = 0; i < bm.getSize(); i++) {
             if (bm.test(i)) {
+                // 位为1，走右子树
                 current = current->rc;
             }
             else {
+                // 位为0，走左子树
                 current = current->lc;
             }
 
+            // 检查是否为空
             if (!current) {
-                cerr << "解码错误：无效的位图" << endl;
+                cerr << "解码错误：无效的编码路径" << endl;
                 return "";
             }
 
+            // 如果是叶节点，添加字符并回到根节点
             if (current->isLeaf()) {
                 result += current->data.ch;
                 current = huffTree->root();
             }
+        }
+
+        // 检查是否结束在非叶节点
+        if (current != huffTree->root()) {
+            cerr << "警告：编码不完整，部分位未处理" << endl;
         }
 
         return result;
@@ -145,7 +160,7 @@ public:
         cout << "\nHuffman编码表：" << endl;
         cout << "------------" << endl;
         for (const auto& pair : codeTable) {
-            cout << pair.first << ": " << pair.second << endl;
+            cout << pair.first << ": " << pair.second.toString() << endl;
         }
     }
 

@@ -9,12 +9,13 @@ using namespace std;
 
 class Bitmap {
 private:
-    vector<unsigned char> data;  // 使用无符号字符存储位
+    vector<unsigned char> data;  // 用无符号字符存储位
     size_t size;                 // 当前位数
 
 public:
     // 构造函数
     Bitmap() : size(0) {}
+
     Bitmap(const string& bitStr) : size(0) {
         for (char c : bitStr) {
             if (c == '1') set(size++);
@@ -72,6 +73,13 @@ public:
             result += test(i) ? '1' : '0';
         }
         return result;
+    }
+
+    // 删除最后一位
+    void pop() {
+        if (size > 0) {
+            size--;
+        }
     }
 
     // 重载输出运算符

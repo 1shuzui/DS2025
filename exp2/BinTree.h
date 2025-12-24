@@ -4,9 +4,10 @@
 #include <iostream>
 #include <queue>
 #include <functional>
+#include <algorithm>
 using namespace std;
 
-// 二叉树节点类
+// 二叉树节点
 template <typename T>
 class BinNode {
 public:
@@ -16,14 +17,16 @@ public:
     BinNode<T>* rc;  // 右孩子
     int height;      // 高度
 
-    // 构造函数
+    // 默认构造函数
     BinNode() : parent(nullptr), lc(nullptr), rc(nullptr), height(0) {}
+
+    // 构造函数
     BinNode(T e, BinNode<T>* p = nullptr, BinNode<T>* l = nullptr,
         BinNode<T>* r = nullptr, int h = 0)
         : data(e), parent(p), lc(l), rc(r), height(h) {
     }
 
-    // 统计子树规模
+    // 子树大小
     int size() const {
         int s = 1;
         if (lc) s += lc->size();
@@ -41,17 +44,17 @@ public:
         return rc = new BinNode<T>(e, this);
     }
 
-    // 判断是否为叶节点
+    // 是否是叶节点
     bool isLeaf() const {
         return !lc && !rc;
     }
 };
 
-// 二叉树类
+// 二叉树
 template <typename T>
 class BinTree {
 protected:
-    int _size;               // 规模
+    int _size;               // 大小
     BinNode<T>* _root;       // 根节点
 
 public:
@@ -64,10 +67,10 @@ public:
         if (_size > 0) remove(_root);
     }
 
-    // 获取规模
+    // 获取大小
     int size() const { return _size; }
 
-    // 判断是否为空
+    // 是否为空
     bool empty() const { return !_root; }
 
     // 获取根节点
@@ -110,7 +113,7 @@ public:
         return x->rc;
     }
 
-    // 先序遍历
+    // 前序遍历
     template <typename VST>
     void travPre(VST& visit) {
         if (_root) travPre(_root, visit);
@@ -152,7 +155,7 @@ public:
         visit(x->data);
     }
 
-    // 层次遍历
+    // 层序遍历
     template <typename VST>
     void travLevel(VST& visit) {
         if (!_root) return;
@@ -167,7 +170,7 @@ public:
         }
     }
 
-    // 移除子树
+    // 删除子树
     int remove(BinNode<T>* x) {
         if (!x) return 0;
         int n = 1 + remove(x->lc) + remove(x->rc);
@@ -182,6 +185,7 @@ public:
     }
 
 private:
+    // 统计叶节点数量（辅助函数）
     int countLeaves(BinNode<T>* x) const {
         if (!x) return 0;
         if (x->isLeaf()) return 1;
